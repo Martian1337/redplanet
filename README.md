@@ -33,8 +33,33 @@ New to hands-on security practice? Start with these:
 
 ## Requirements
 
-- A Linux host (or VM) with Docker Engine installed and running.
+- A Linux host or virtual machine to run on. Everything here is intentionally
+  vulnerable, so use an isolated machine, not your daily computer.
+- Docker Engine installed and the daemon running.
+  Install guide: https://docs.docker.com/engine/install/
 - The host ports listed per range below must be free.
+
+### Docker permissions (one-time setup)
+
+The Docker daemon is owned by root, so plain `docker` commands need elevated
+access. Either prefix every command with `sudo`, or (recommended) add your user to
+the `docker` group so you can run Docker without `sudo`:
+
+```bash
+sudo usermod -aG docker "$USER"
+```
+
+Group membership only takes effect in a new login session. After running that, log
+out and back in (or open a fresh terminal, or run `newgrp docker`), then verify:
+
+```bash
+docker run --rm hello-world
+```
+
+If that works without `sudo`, you are ready. If you still see "permission denied
+while trying to connect to the Docker socket at unix:///var/run/docker.sock", your
+current terminal has not picked up the new group yet - start a fresh login session,
+or use `sudo` for now.
 
 ## Warning
 
