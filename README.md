@@ -13,6 +13,7 @@ range:
 | `web-pentest` | Web and API AppSec | WebGoat, Juice Shop, crAPI, Metasploitable2, plus 7 OWASP VWAD apps |
 | `full-appsec` | AppSec and DevSecOps | The web-pentest range plus Jenkins, GitLab, SonarQube, Trivy, Gitleaks |
 | `netsec` | Network security | An in-network Kali box and classic vulnerable services on a static-IP LAN |
+| `latest` (= `all`) | Everything at once | All of the above deployed together, conflicts resolved - see "Deploy everything" below |
 
 ---
 
@@ -93,6 +94,57 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock martiandefense/redp
 Give the services a minute to become healthy (`docker ps`), then open the URLs
 listed for that range.
 
+### Deploy everything at once
+
+The `latest` (a.k.a. `all`) tag is a combined controller that brings up **every
+range together** - the labs, the web/API apps, the DevSecOps toolchain, and the
+netsec LAN - with all port and naming conflicts resolved for you:
+
+```bash
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock martiandefense/redplanet:latest
+```
+
+This is heavy: it runs GitLab, SonarQube, Jenkins, the crAPI stack,
+Metasploitable2, Samba, a Kali box, and all 13 labs at the same time. Use a host
+with plenty of RAM (16 GB or more recommended) and give it a few minutes to
+settle. You get a single Mission Control dashboard on port 8000 that lights up
+each range as it comes online. The optional netsec add-on packs
+(`cve`/`ics`/`voip`/`pivot`) are not included here - they stay opt-in.
+
+To stop everything, remove the containers of each project:
+
+```bash
+for p in redplanet-labs redplanet-web redplanet-devsecops redplanet-netsec; do
+  docker rm -f $(docker ps -aq --filter "label=com.docker.compose.project=$p") 2>/dev/null
+done
+```
+
+### Mission Control dashboard (every range)
+
+Whichever range you start, it comes with the Mission Control dashboard at
+**http://localhost:8000**. It is a live index of every target that:
+
+- probes each service and shows which **environments are active and detected**;
+- turns every reachable target into a labelled launch button;
+- provides search, per-range filters, spoiler-free hints, and (for the labs)
+  capture tracking.
+
+Open a target from your host using its **`localhost:PORT`** link. The `10.x` /
+`172.x` addresses shown on the cards are internal container addresses on the
+range's Docker network - they are not reachable from your browser; they are there
+so you know each host's address when attacking from inside the range (for
+example, from the netsec Kali box).
+
+If you run more than one range at the same time, give the extra ones a different
+portal port so they do not collide:
+
+```bash
+PORTAL_PORT=8010 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock martiandefense/redplanet:netsec
+```
+
+The **CTF scoreboard** (http://localhost:8001) ships only with the `labs` range;
+the dashboard detects whether it is present and links to it when it is.
+
 ### Stopping a range
 
 The range's services run as named containers on their own Docker network. Remove
@@ -108,11 +160,11 @@ docker rm -f $(docker ps -aq --filter network=training-net)    # netsec
 
 ## Range: `labs`
 
-Thirteen small, single-vulnerability labs, a mission-control portal, and a
+Thirteen small, single-vulnerability labs, the Mission Control dashboard, and a
 persistent CTF scoreboard.
 
-- Portal (index of every target): http://localhost:8000
-- Scoreboard (submit flags, leaderboard, survives restarts): http://localhost:8001
+- Dashboard (index of every target - ships with every range): http://localhost:8000
+- Scoreboard (submit flags, leaderboard, survives restarts - `labs` only): http://localhost:8001
 
 | Lab | Vulnerability | URL |
 |-----|---------------|-----|

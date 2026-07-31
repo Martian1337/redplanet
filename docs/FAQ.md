@@ -26,6 +26,13 @@ to test. See SAFETY.md.
 Run its controller image with the Docker socket mounted. See the main README for
 the exact command per range.
 
+**Can I run everything at once?**
+Yes. The `latest` (a.k.a. `all`) tag deploys every range together with all port
+and naming conflicts resolved: `docker run --rm -v /var/run/docker.sock:/var/run/docker.sock martiandefense/redplanet:latest`.
+It is heavy (GitLab, SonarQube, Jenkins, crAPI, Metasploitable2, Kali, all 13
+labs) - use a host with 16 GB+ RAM and give it a few minutes. You still get one
+dashboard on port 8000. Optional netsec packs stay opt-in.
+
 **A service will not load in my browser.**
 Give it a minute and check `docker ps`. Some services (databases, Java apps,
 GitLab) take a while to become healthy. If a container shows as unhealthy or keeps
@@ -35,6 +42,19 @@ restarting for several minutes, see below.
 Another program, or a previously started range, is already using that port. Stop
 the other range (see the main README's stop commands) or free the port, then try
 again. Remember that the two AppSec ranges share ports and cannot run at once.
+Every range serves the dashboard on port 8000, so if you run two ranges at once,
+give the second one a different portal port: `PORTAL_PORT=8010 docker run ...`.
+
+**The `10.x` / `172.x` addresses on the dashboard do not open in my browser.**
+That is expected. Those are internal container addresses on the range's Docker
+network - they are only reachable from inside the range (for example, from the
+netsec Kali box). From your own machine, open a target with its `localhost:PORT`
+link (the launch button on each card), not the internal IP.
+
+**Which page is the dashboard, and does every range have one?**
+The dashboard (Mission Control) is at `http://localhost:8000` and ships with every
+range. The scoreboard at `http://localhost:8001` is part of the `labs` range only;
+the dashboard shows whether it is running.
 
 **"Permission denied" talking to the Docker socket.**
 Run the command with `sudo`, or add your user to the `docker` group

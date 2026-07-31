@@ -66,5 +66,8 @@ Plain-language definitions of terms used across RedPlanet.
   the controller image mounts it to start the range's containers.
 - Attacker box: the Kali Linux container in the netsec range, pre-loaded with tools,
   that you attack from.
-- Portal: the web page that indexes every target in the `labs` range.
-- Scoreboard: the web page where you submit captured flags and track progress.
+- Dashboard (Mission Control / portal): the web page at http://localhost:8000 that
+  indexes every target, shows which environments are live, and gives each a launch
+  button. It ships with every range.
+- Scoreboard: the web page (http://localhost:8001) where you submit captured flags
+  and track progress. It ships with the `labs` range only.

@@ -9,9 +9,13 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock martiandefense/redp
 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock martiandefense/redplanet:web-pentest
 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock martiandefense/redplanet:full-appsec
 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock martiandefense/redplanet:netsec
+
+# Everything at once (heavy - 16 GB+ RAM):
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock martiandefense/redplanet:latest
 ```
 
-Run only one AppSec range (`web-pentest` or `full-appsec`) at a time.
+Run only one AppSec range (`web-pentest` or `full-appsec`) at a time. The
+`latest` tag deploys all ranges together with conflicts already resolved.
 
 ## Check status
 
@@ -27,12 +31,22 @@ docker logs <container-name>                                # a container's outp
 docker rm -f $(docker ps -aq --filter network=redplanet-net)   # labs
 docker rm -f $(docker ps -aq --filter network=app-network)     # web-pentest / full-appsec
 docker rm -f $(docker ps -aq --filter network=training-net)    # netsec
+
+# Everything (the latest / all deploy):
+for p in redplanet-labs redplanet-web redplanet-devsecops redplanet-netsec; do
+  docker rm -f $(docker ps -aq --filter "label=com.docker.compose.project=$p") 2>/dev/null
+done
 ```
+
+## Access - dashboard and scoreboard
+
+- Dashboard:   http://localhost:8000   (ships with EVERY range)
+- Scoreboard:  http://localhost:8001   (labs range only)
+- Multiple ranges at once? Set PORTAL_PORT for the extra ones, e.g.
+  `PORTAL_PORT=8010 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock martiandefense/redplanet:netsec`
 
 ## Access - labs range
 
-- Portal:      http://localhost:8000
-- Scoreboard:  http://localhost:8001
 - Labs:        http://localhost:5001 through http://localhost:5013
 
 ## Access - web-pentest range

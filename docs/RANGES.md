@@ -26,14 +26,18 @@ around it, so the concept is obvious.
 
 Best for: beginners, and anyone wanting a focused refresher on a specific class.
 
-What you get: thirteen labs, a portal that indexes them, and a scoreboard that
-tracks the flags you capture. The labs roughly increase in difficulty. The final
-target, `arcadia-gauntlet`, is a capstone that chains several weaknesses together
-into a short mission, the way a real finding often requires more than one step.
+What you get: thirteen labs, the Mission Control dashboard that indexes them, and
+a scoreboard that tracks the flags you capture. The labs roughly increase in
+difficulty. The final target, `arcadia-gauntlet`, is a capstone that chains
+several weaknesses together into a short mission, the way a real finding often
+requires more than one step.
 
-How to work it: open the portal, pick a lab, read its on-page objective and hint,
-try to capture the flag, then submit it on the scoreboard. If you get stuck, the
-lab pages explain the intended path.
+How to work it: open the dashboard (http://localhost:8000), pick a lab, read its
+on-page objective and hint, try to capture the flag, then submit it on the
+scoreboard. If you get stuck, the lab pages explain the intended path.
+
+Note: the dashboard ships with every range, but the scoreboard is part of the
+`labs` range only.
 
 ## Range: web-pentest
 

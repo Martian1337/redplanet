@@ -48,8 +48,12 @@ docker ps
 
 In a browser on the same machine, open:
 
-- http://localhost:8000 - the portal (an index of every target, with links)
-- http://localhost:8001 - the scoreboard (where you submit flags)
+- http://localhost:8000 - the dashboard (a live index of every target, with a
+  launch button for each; ships with every range)
+- http://localhost:8001 - the scoreboard (where you submit flags; `labs` only)
+
+Always open a target with its **`localhost:PORT`** button. The `10.x` addresses
+on the cards are internal container addresses and will not open in your browser.
 
 ## 5. Solve your first lab (a worked example)
 
