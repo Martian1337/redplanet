@@ -33,6 +33,19 @@ It is heavy (GitLab, SonarQube, Jenkins, crAPI, Metasploitable2, Kali, all 13
 labs) - use a host with 16 GB+ RAM and give it a few minutes. You still get one
 dashboard on port 8000. Optional netsec packs stay opt-in.
 
+**It's too heavy - can I turn parts off without stopping everything?**
+Yes. Every controller understands two environment variables: `RP_ACTION` (`up` or
+`down`) and, on the combined `latest` image, `RP_ONLY` (`all`, `portal`, `labs`,
+`web`, `devsecops`, `netsec`). For example, drop just the DevSecOps tools with
+`-e RP_ACTION=down -e RP_ONLY=devsecops` on the `latest` image, or stop a single
+range with `-e RP_ACTION=down` on that range's own tag. The shared dashboard
+keeps running so you still see the status of whatever is left up.
+
+**If I run two ranges (say web-pentest and netsec), do their dashboards clash?**
+No. The dashboard is a single shared service on port 8000. The second range
+reuses the running dashboard instead of starting its own, and the dashboard
+detects and shows the status of every range that is up.
+
 **A service will not load in my browser.**
 Give it a minute and check `docker ps`. Some services (databases, Java apps,
 GitLab) take a while to become healthy. If a container shows as unhealthy or keeps
@@ -41,9 +54,10 @@ restarting for several minutes, see below.
 **"Port is already in use" when I start a range.**
 Another program, or a previously started range, is already using that port. Stop
 the other range (see the main README's stop commands) or free the port, then try
-again. Remember that the two AppSec ranges share ports and cannot run at once.
-Every range serves the dashboard on port 8000, so if you run two ranges at once,
-give the second one a different portal port: `PORTAL_PORT=8010 docker run ...`.
+again. Remember that the two AppSec ranges (`web-pentest` and `full-appsec`) share
+ports and cannot run at once. The dashboard on port 8000 is shared automatically -
+a second range reuses it rather than conflicting, so it is not a source of "port
+in use" errors.
 
 **The `10.x` / `172.x` addresses on the dashboard do not open in my browser.**
 That is expected. Those are internal container addresses on the range's Docker

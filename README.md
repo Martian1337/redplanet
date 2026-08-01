@@ -111,10 +111,17 @@ settle. You get a single Mission Control dashboard on port 8000 that lights up
 each range as it comes online. The optional netsec add-on packs
 (`cve`/`ics`/`voip`/`pivot`) are not included here - they stay opt-in.
 
-To stop everything, remove the containers of each project:
+To stop everything, run the same image with `RP_ACTION=down`:
 
 ```bash
-for p in redplanet-labs redplanet-web redplanet-devsecops redplanet-netsec; do
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+  -e RP_ACTION=down martiandefense/redplanet:latest
+```
+
+Or remove the containers of each project directly:
+
+```bash
+for p in redplanet-portal redplanet-labs redplanet-web redplanet-devsecops redplanet-netsec; do
   docker rm -f $(docker ps -aq --filter "label=com.docker.compose.project=$p") 2>/dev/null
 done
 ```
@@ -135,15 +142,36 @@ range's Docker network - they are not reachable from your browser; they are ther
 so you know each host's address when attacking from inside the range (for
 example, from the netsec Kali box).
 
-If you run more than one range at the same time, give the extra ones a different
-portal port so they do not collide:
-
-```bash
-PORTAL_PORT=8010 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock martiandefense/redplanet:netsec
-```
+The dashboard is a single shared service. If you run more than one range at the
+same time (for example `web-pentest` and `netsec`), they **reuse the same
+dashboard** on port 8000 instead of conflicting, and it detects every range that
+is up - no extra configuration needed.
 
 The **CTF scoreboard** (http://localhost:8001) ships only with the `labs` range;
 the dashboard detects whether it is present and links to it when it is.
+
+### Bring parts up or down
+
+The full deployment is heavy, so you can start or stop portions with two
+environment variables on the same `docker run` command:
+
+- `RP_ACTION` = `up` (default) or `down`
+- `RP_ONLY` = `all` (default), `portal`, `labs`, `web`, `devsecops`, or `netsec`
+  (the `RP_ONLY` selector applies to the combined `latest` image)
+
+```bash
+# From an "everything" deploy, drop just the heavy DevSecOps tools:
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+  -e RP_ACTION=down -e RP_ONLY=devsecops martiandefense/redplanet:latest
+
+# Tear down a single range you started from its own tag:
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+  -e RP_ACTION=down martiandefense/redplanet:netsec
+```
+
+Tearing a range down leaves the shared dashboard running. To remove the dashboard
+too, use `-e RP_ACTION=down -e RP_ONLY=portal` (or `-e RP_ACTION=down` on the
+`latest` image, which removes everything).
 
 ### Stopping a range
 

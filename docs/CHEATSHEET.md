@@ -33,17 +33,24 @@ docker rm -f $(docker ps -aq --filter network=app-network)     # web-pentest / f
 docker rm -f $(docker ps -aq --filter network=training-net)    # netsec
 
 # Everything (the latest / all deploy):
-for p in redplanet-labs redplanet-web redplanet-devsecops redplanet-netsec; do
-  docker rm -f $(docker ps -aq --filter "label=com.docker.compose.project=$p") 2>/dev/null
-done
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -e RP_ACTION=down martiandefense/redplanet:latest
+```
+
+## Bring parts up or down (RP_ACTION / RP_ONLY)
+
+```bash
+# Stop one range you started from its own tag:
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -e RP_ACTION=down martiandefense/redplanet:netsec
+
+# From the combined image, act on one portion (all|portal|labs|web|devsecops|netsec):
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -e RP_ACTION=down -e RP_ONLY=devsecops martiandefense/redplanet:latest
 ```
 
 ## Access - dashboard and scoreboard
 
-- Dashboard:   http://localhost:8000   (ships with EVERY range)
+- Dashboard:   http://localhost:8000   (one shared dashboard, all ranges)
 - Scoreboard:  http://localhost:8001   (labs range only)
-- Multiple ranges at once? Set PORTAL_PORT for the extra ones, e.g.
-  `PORTAL_PORT=8010 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock martiandefense/redplanet:netsec`
+- Run several ranges at once and they reuse the same dashboard - no config needed.
 
 ## Access - labs range
 
