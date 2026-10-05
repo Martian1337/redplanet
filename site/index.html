@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RedPlanet · intentionally vulnerable training ranges</title>
+<meta name="description" content="RedPlanet — self-hosted, Docker-based cybersecurity training ranges. Seven ranges across web/API AppSec, DevSecOps, network, cloud, Kubernetes and blue-team detection, plus 17 single-vulnerability labs. Launch one with a single command.">
+<style>
+/* Self-hosted Overpass (Martian Defense brand font) — bundled, no CDN */
+@font-face{font-family:"Overpass";font-style:normal;font-weight:400;font-display:swap;src:url("fonts/overpass-latin-400-normal.woff2") format("woff2")}
+@font-face{font-family:"Overpass";font-style:normal;font-weight:600;font-display:swap;src:url("fonts/overpass-latin-600-normal.woff2") format("woff2")}
+@font-face{font-family:"Overpass";font-style:normal;font-weight:700;font-display:swap;src:url("fonts/overpass-latin-700-normal.woff2") format("woff2")}
+@font-face{font-family:"Overpass";font-style:normal;font-weight:800;font-display:swap;src:url("fonts/overpass-latin-800-normal.woff2") format("woff2")}
+@font-face{font-family:"Overpass";font-style:normal;font-weight:900;font-display:swap;src:url("fonts/overpass-latin-900-normal.woff2") format("woff2")}
+:root{
+  --green:#12d04e; --green-bright:#36e86b; --green-deep:#0a8f36; --gold:#ffc947;
+  --bg:#05060a; --bg2:#070a10; --panel:#0e1118; --panel2:#11151d;
+  --ink:#f3f6f4; --muted:#9aa4b2; --faint:#6b7382;
+  --line:#1b2230; --line2:#232c3c;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --maxw:1080px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.65 "Overpass",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+a{color:var(--green);text-decoration:none}
+a:hover{color:var(--green-bright)}
+h1,h2,h3,h4{color:var(--ink);letter-spacing:-.01em}
+::selection{background:var(--green);color:#03150a}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+.accent{color:var(--green)}
+code{font-family:var(--mono)}
+
+/* ---------- nav ---------- */
+nav{position:sticky;top:0;z-index:20;background:rgba(5,6,10,.72);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;gap:22px;height:60px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.02em;font-size:16px;color:var(--ink)}
+.brand img{height:26px;width:auto;display:block}
+nav .links{display:flex;gap:22px;margin-left:8px}
+nav a.link{color:var(--muted);font-size:14px;font-weight:600}
+nav a.link:hover{color:var(--ink)}
+nav .spacer{margin-left:auto}
+.ghlink{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:14px;font-weight:600}
+.ghlink:hover{color:var(--ink)}
+.ghlink svg{width:16px;height:16px}
+@media(max-width:720px){nav .links{display:none}}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:15px;
+  padding:12px 20px;border-radius:10px;border:1px solid transparent;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn svg{width:16px;height:16px}
+.btn-primary{background:var(--green);color:#03150a;border-color:var(--green)}
+.btn-primary:hover{background:var(--green-bright);color:#03150a;transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--line2)}
+.btn-ghost:hover{border-color:var(--green);color:var(--green)}
+
+/* ---------- hero ---------- */
+.hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line);
+  background:radial-gradient(880px 420px at 50% -8%,rgba(18,208,78,.10),transparent 70%),var(--bg)}
+.hero .wrap{padding:84px 24px 72px;text-align:center}
+.mark{height:72px;width:auto;margin:0 auto 24px;display:block}
+.eyebrow{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--green);margin-bottom:14px}
+.hero h1{font-size:clamp(42px,7vw,68px);line-height:1.02;font-weight:900;margin:0 0 18px;letter-spacing:-.03em}
+.hero p.lede{font-size:clamp(17px,2.2vw,20px);color:var(--muted);max-width:620px;margin:0 auto 32px}
+.hero p.lede b{color:var(--ink);font-weight:700}
+.actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.stats{display:flex;gap:40px;justify-content:center;flex-wrap:wrap;margin-top:46px;
+  padding-top:30px;border-top:1px solid var(--line)}
+.stat b{display:block;font-size:30px;font-weight:900;color:var(--ink);line-height:1;letter-spacing:-.02em}
+.stat span{display:block;font-size:12.5px;color:var(--faint);margin-top:7px;letter-spacing:.04em;text-transform:uppercase}
+
+/* ---------- sections ---------- */
+section{padding:76px 0;border-bottom:1px solid var(--line)}
+.head{max-width:620px;margin:0 0 40px}
+.head .eyebrow{margin-bottom:10px}
+.head h2{font-size:clamp(26px,3.6vw,34px);font-weight:800;margin:0 0 12px;letter-spacing:-.02em}
+.head p{color:var(--muted);font-size:16.5px;margin:0}
+
+/* ---------- range cards ---------- */
+.ranges{display:grid;grid-template-columns:repeat(auto-fit,minmax(224px,1fr));gap:16px}
+.rcard{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);
+  border-radius:14px;padding:22px;transition:.18s;position:relative}
+.rcard:hover{border-color:var(--line2);transform:translateY(-3px);box-shadow:0 12px 34px rgba(0,0,0,.4)}
+.rcard .ico{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;margin-bottom:16px;
+  background:rgba(18,208,78,.1);border:1px solid rgba(18,208,78,.22)}
+.rcard .ico svg{width:20px;height:20px;color:var(--green)}
+.rcard h3{font-size:18px;font-weight:800;margin:0 0 3px}
+.rcard .tag{font-family:var(--mono);font-size:12px;color:var(--green);margin-bottom:11px;display:block}
+.rcard p{color:var(--muted);font-size:14px;margin:0;line-height:1.55}
+
+/* ---------- labs grid ---------- */
+.labgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.lab{display:flex;align-items:center;gap:13px;background:var(--panel);border:1px solid var(--line);
+  border-radius:11px;padding:13px 15px;transition:.15s}
+.lab:hover{border-color:var(--line2);background:var(--panel2)}
+.lab .port{font-family:var(--mono);font-size:12px;color:var(--green);background:rgba(18,208,78,.09);
+  border:1px solid rgba(18,208,78,.2);border-radius:7px;padding:5px 8px;flex:0 0 auto}
+.lab .meta{min-width:0}
+.lab .name{font-family:var(--mono);font-size:13.5px;color:var(--ink);font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lab .cls{font-size:12.5px;color:var(--muted)}
+.labnote{color:var(--faint);font-size:13.5px;margin:22px 0 0}
+.labnote code{color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+
+/* ---------- quick start ---------- */
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:760px){.cols{grid-template-columns:1fr}}
+.block{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.block .label{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:13px 16px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted);font-weight:600}
+.block pre{margin:0;padding:16px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.7;color:var(--ink)}
+.block pre .p{color:var(--green)}.block pre .c{color:var(--faint)}
+.copy{background:transparent;border:1px solid var(--line2);color:var(--muted);border-radius:7px;
+  padding:4px 10px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.copy:hover{border-color:var(--green);color:var(--green)}
+.rangelist{margin:16px 0 0;font-size:13.5px;color:var(--muted)}
+.rangelist code{font-family:var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--line);
+  border-radius:5px;padding:1px 6px}
+.note{margin:22px 0 0;color:var(--faint);font-size:13.5px}
+.note code{font-family:var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+
+/* ---------- safety ---------- */
+.safety{background:var(--bg2)}
+.warn{display:grid;gap:14px;margin-top:4px}
+.warn .row{display:flex;gap:13px;align-items:flex-start;color:var(--muted);font-size:15px}
+.warn .row svg{width:19px;height:19px;color:var(--gold);flex:0 0 auto;margin-top:2px}
+.warn .row b{color:var(--ink);font-weight:700}
+.warn .row code{font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+
+/* ---------- footer ---------- */
+footer{padding:46px 0;text-align:center;color:var(--faint);font-size:13.5px}
+footer .brand{justify-content:center;margin-bottom:12px}
+footer a{color:var(--muted)}footer a:hover{color:var(--green)}
+footer .fine{margin-top:8px;color:var(--faint)}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <span class="brand"><img src="logo.png" alt="Martian Defense">RedPlanet</span>
+  <div class="links">
+    <a class="link" href="#ranges">Ranges</a>
+    <a class="link" href="#labs">Labs</a>
+    <a class="link" href="#start">Quick start</a>
+    <a class="link" href="#safety">Safety</a>
+  </div>
+  <span class="spacer"></span>
+  <a class="ghlink" href="https://github.com/Martian1337/redplanet">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.3-1.8-1.3-1.8-1.1-.7 0-.7 0-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 5 18.3 5.3 18.3 5.3c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5Z"/></svg>
+    GitHub</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <img class="mark" src="logo.png" alt="Martian Defense" width="72" height="75">
+  <span class="eyebrow">Self-hosted · Docker · offline</span>
+  <h1>Attack a whole range<br>in <span class="accent">one command</span></h1>
+  <p class="lede">RedPlanet is <b>seven</b> intentionally vulnerable training ranges and <b>17</b>
+  single-vulnerability labs — web, API, DevSecOps, network, cloud, Kubernetes and blue-team —
+  that each stand up on your host from a single Docker image.</p>
+  <div class="actions">
+    <a class="btn btn-primary" href="#start">Get started
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <a class="btn btn-ghost" href="#ranges">Browse the ranges</a>
+  </div>
+  <div class="stats">
+    <div class="stat"><b>7</b><span>ranges</span></div>
+    <div class="stat"><b>17</b><span>custom labs</span></div>
+    <div class="stat"><b>1</b><span>command to launch</span></div>
+  </div>
+</div></header>
+
+<section id="ranges"><div class="wrap">
+  <div class="head">
+    <span class="eyebrow">Seven ranges</span>
+    <h2>Pick the surface you want to attack</h2>
+    <p>Each range is one Docker image. Run one on its own, stand several up side by side, or
+    bring up everything at once with the <code style="font-family:var(--mono);color:var(--green)">latest</code> tag.</p>
+  </div>
+  <div class="ranges">
+    <div class="rcard"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <h3>labs</h3><span class="tag">:labs</span>
+      <p>17 Mars-themed labs — one vulnerability class each — plus the Mission Control portal and a CTF scoreboard.</p></div>
+    <div class="rcard"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3C9 6 9 18 12 21"/></svg></div>
+      <h3>web-pentest</h3><span class="tag">:web-pentest</span>
+      <p>WebGoat, Juice Shop, the full crAPI stack, Metasploitable2 (DVWA / Mutillidae) and 7 OWASP VWAD apps.</p></div>
+    <div class="rcard"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 8a5 5 0 1 0 0 8M17 16a5 5 0 1 0 0-8" stroke-linecap="round"/><circle cx="7" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="17" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg></div>
+      <h3>full-appsec</h3><span class="tag">:full-appsec</span>
+      <p>The AppSec range plus a DevSecOps toolchain: Jenkins, GitLab CE, SonarQube, Trivy and Gitleaks.</p></div>
+    <div class="rcard"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M5 8v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8M12 13v3" stroke-linecap="round"/></svg></div>
+      <h3>netsec</h3><span class="tag">:netsec</span>
+      <p>An in-network Kali box and classic vulnerable services on a static-IP LAN; opt-in AD, CVE, ICS and VoIP packs.</p></div>
+    <div class="rcard"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 18a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.6A4 4 0 0 1 17 18H7Z" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <h3>cloud</h3><span class="tag">:cloud</span>
+      <p>A LocalStack "AWS": pivot an SSRF to the metadata service, steal credentials, and loot S3 / Secrets Manager.</p></div>
+    <div class="rcard"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l8.5 5v10L12 22l-8.5-5V7L12 2Z" stroke-linejoin="round"/><path d="M12 7v10M12 12l4.5-2.5M12 12 7.5 9.5" stroke-linecap="round"/></svg></div>
+      <h3>k8s</h3><span class="tag">:k8s</span>
+      <p>A single-node k3s cluster: anonymous cluster-admin RBAC, then a privileged / hostPath escape onto the node.</p></div>
+    <div class="rcard"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v5c0 4.4-3 7.8-7 9-4-1.2-7-4.6-7-9V6l7-3Z" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <h3>blue</h3><span class="tag">:blue</span>
+      <p>The defensive range: a Suricata IDS and SOC dashboard replaying attack traffic for you to triage and hunt.</p></div>
+  </div>
+</div></section>
+
+<section id="labs"><div class="wrap">
+  <div class="head">
+    <span class="eyebrow">labs</span>
+    <h2>17 focused vulnerability labs</h2>
+    <p>Each lab isolates a single vulnerability class. Exploit it, capture an
+    <code style="font-family:var(--mono);color:var(--gold)">RP{…}</code> flag, and track your progress on the scoreboard.</p>
+  </div>
+  <div class="labgrid">
+    <div class="lab"><span class="port">5001</span><div class="meta"><div class="name">phobos-sqli</div><div class="cls">SQL injection</div></div></div>
+    <div class="lab"><span class="port">5002</span><div class="meta"><div class="name">deimos-xss</div><div class="cls">Cross-site scripting</div></div></div>
+    <div class="lab"><span class="port">5003</span><div class="meta"><div class="name">ares-cmdi</div><div class="cls">OS command injection</div></div></div>
+    <div class="lab"><span class="port">5004</span><div class="meta"><div class="name">valles-traversal</div><div class="cls">Path traversal / LFI</div></div></div>
+    <div class="lab"><span class="port">5005</span><div class="meta"><div class="name">olympus-ssrf</div><div class="cls">Server-side request forgery</div></div></div>
+    <div class="lab"><span class="port">5006</span><div class="meta"><div class="name">curiosity-ssti</div><div class="cls">Template injection (Jinja2)</div></div></div>
+    <div class="lab"><span class="port">5007</span><div class="meta"><div class="name">viking-xxe</div><div class="cls">XML external entity</div></div></div>
+    <div class="lab"><span class="port">5008</span><div class="meta"><div class="name">perseverance-jwt</div><div class="cls">JWT / broken auth</div></div></div>
+    <div class="lab"><span class="port">5009</span><div class="meta"><div class="name">cydonia-deserialize</div><div class="cls">Insecure deserialization</div></div></div>
+    <div class="lab"><span class="port">5010</span><div class="meta"><div class="name">tharsis-graphql</div><div class="cls">GraphQL abuse</div></div></div>
+    <div class="lab"><span class="port">5011</span><div class="meta"><div class="name">elysium-idor</div><div class="cls">IDOR / BOLA</div></div></div>
+    <div class="lab"><span class="port">5012</span><div class="meta"><div class="name">noctis-proto</div><div class="cls">Prototype pollution (Node)</div></div></div>
+    <div class="lab"><span class="port">5013</span><div class="meta"><div class="name">arcadia-gauntlet</div><div class="cls">Multi-vuln chain (CTF)</div></div></div>
+    <div class="lab"><span class="port">5014</span><div class="meta"><div class="name">hellas-upload</div><div class="cls">Unrestricted file upload → RCE</div></div></div>
+    <div class="lab"><span class="port">5015</span><div class="meta"><div class="name">utopia-cors</div><div class="cls">CORS misconfiguration</div></div></div>
+    <div class="lab"><span class="port">5016</span><div class="meta"><div class="name">gale-massassign</div><div class="cls">Mass assignment</div></div></div>
+    <div class="lab"><span class="port">5017</span><div class="meta"><div class="name">jezero-nosqli</div><div class="cls">NoSQL injection</div></div></div>
+  </div>
+  <p class="labnote">Codenames follow Mars features, moons and rovers. Static IPs on
+  <code>10.66.6.0/24</code>; the Mission Control portal at <code>:8000</code> indexes every target.</p>
+</div></section>
+
+<section id="start"><div class="wrap">
+  <div class="head">
+    <span class="eyebrow">Quick start</span>
+    <h2>Everything runs in Docker</h2>
+    <p>One image per range, launched through the Docker socket. The controller starts the range
+    and exits; the range keeps running.</p>
+  </div>
+  <div class="cols">
+    <div class="block">
+      <div class="label">One-liner · installs Docker if missing
+        <button class="copy" onclick="navigator.clipboard&amp;&amp;navigator.clipboard.writeText('curl -sSL https://redplanet.martiandefense.org/install.sh | sudo bash')">copy</button></div>
+      <pre><span class="p">curl</span> -sSL https://redplanet.martiandefense.org/install.sh \
+  | <span class="p">sudo</span> bash
+
+<span class="c"># choose a range (default: labs)</span>
+<span class="p">curl</span> ... | <span class="p">sudo</span> RANGE=full-appsec bash</pre>
+    </div>
+    <div class="block">
+      <div class="label">Already have Docker? Run the image
+        <button class="copy" onclick="navigator.clipboard&amp;&amp;navigator.clipboard.writeText('docker run --rm -v /var/run/docker.sock:/var/run/docker.sock martiandefense/redplanet:labs')">copy</button></div>
+      <pre><span class="p">docker</span> run --rm \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  martiandefense/redplanet:labs
+
+<span class="c"># dashboard →</span> http://localhost:8000
+<span class="c"># stop: add</span> -e RP_ACTION=down</pre>
+    </div>
+  </div>
+  <p class="rangelist"><code>RANGE</code> = <code>labs</code> · <code>web-pentest</code> · <code>full-appsec</code> · <code>netsec</code> · <code>cloud</code> · <code>k8s</code> · <code>blue</code> · <code>all</code></p>
+  <p class="note">Host ports bind to <code>127.0.0.1</code> by default. On an isolated lab network, set
+  <code>LISTEN_IP=0.0.0.0</code> to reach targets from an attacker box.</p>
+</div></section>
+
+<section id="safety" class="safety"><div class="wrap">
+  <div class="head">
+    <span class="eyebrow">Safety</span>
+    <h2>Everything here is deliberately insecure</h2>
+    <p>These ranges ship real, exploitable vulnerabilities on purpose. Treat the whole project as
+    hostile code and contain it accordingly.</p>
+  </div>
+  <div class="warn">
+    <div class="row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l9 16H3l9-16Z" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke-linecap="round"/></svg>
+      <div>Run only on an <b>isolated host or a dedicated lab VM</b> — never alongside sensitive data or on a production network.</div></div>
+    <div class="row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke-linecap="round"/></svg>
+      <div>Keep the default <code>127.0.0.1</code> binding unless you fully control the network, and never expose these services to the public internet.</div></div>
+    <div class="row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l7 3v5c0 4.4-3 7.8-7 9-4-1.2-7-4.6-7-9V6l7-3Z" stroke-linejoin="round"/></svg>
+      <div>Use RedPlanet for <b>authorized learning only</b>. The techniques you practice here are illegal against systems you do not own or have permission to test.</div></div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <span class="brand"><img src="logo.png" alt="Martian Defense">RedPlanet</span>
+  <div>Intentionally vulnerable training ranges · <a href="https://github.com/Martian1337/redplanet">github.com/Martian1337/redplanet</a></div>
+  <div class="fine">Bundled third-party targets remain under their respective licenses · MIT for RedPlanet's own materials</div>
+</div></footer>
+
+</body>
+</html>

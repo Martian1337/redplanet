@@ -1,0 +1,53 @@
+name: Deploy site to GitHub Pages
+
+# Publishes the RedPlanet landing page (site/) and the installer (install.sh)
+# to GitHub Pages at the custom domain redplanet.martiandefense.org.
+# One-time: Settings -> Pages -> Source: "GitHub Actions", and add a DNS CNAME
+#   redplanet.martiandefense.org -> martian1337.github.io
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'install.sh'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble published site
+        run: |
+          set -eu
+          mkdir -p _site
+          cp site/index.html _site/index.html
+          cp site/logo.png   _site/logo.png
+          cp -r site/fonts   _site/fonts
+          cp install.sh      _site/install.sh
+          # Custom domain + static upload (no Jekyll)
+          echo 'redplanet.martiandefense.org' > _site/CNAME
+          touch _site/.nojekyll
+
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
